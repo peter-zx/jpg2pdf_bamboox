@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JPG to PDF Converter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+  <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg">
+    <h1 class="text-2xl font-bold text-center mb-6">JPG to PDF Converter</h1>
+    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">选择JPG文件</label>
+        <input type="file" name="jpgFiles" id="jpgFiles" accept="image/jpeg" multiple
+               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">文件顺序</label>
+        <ul id="fileList" class="list-disc pl-5"></ul>
+        <input type="hidden" name="fileOrder" id="fileOrder">
+      </div>
+      <div class="mb-4">
+        <label for="saveName" class="block text-sm font-medium text-gray-700">保存文件名</label>
+        <input type="text" name="saveName" placeholder="请输入文件夹和PDF文件名" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+      </div>
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">合并并保存PDF</button>
+      {% if error %}
+        <p class="mt-4 text-sm text-red-600 text-center">{{ error }}</p>
+      {% endif %}
+    </form>
+  </div>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
