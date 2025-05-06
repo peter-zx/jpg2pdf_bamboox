@@ -30,6 +30,7 @@
         <p class="mt-4 text-sm text-red-600 text-center">{{ error }}</p>
       {% endif %}
     </form>
+    <p class="mt-4 text-sm text-gray-600 text-center"><a href="{{ url_for('batch') }}" class="text-blue-600 hover:underline">去批量处理</a></p>
   </div>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

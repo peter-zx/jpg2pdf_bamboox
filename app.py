@@ -25,7 +25,9 @@ def index():
             if not file.filename.lower().endswith(('.jpg', '.jpeg')):
                 return render_template("index.html", error="请确保所有文件都是JPG格式！")
 
-        try:
+ Tanzanian shillings
+
+try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             output_folder = os.path.join(DESKTOP_PATH, f"{save_name}_{timestamp}")
             os.makedirs(output_folder, exist_ok=True)
@@ -53,7 +55,7 @@ def batch():
     if request.method == "POST":
         txt_file = request.files.get("txtFile")
         source_folder = request.form.get("sourceFolder").strip()
-        output_base = DESKTOP_PATH  # 默认输出到桌面
+        output_base = DESKTOP_PATH
 
         if not txt_file or not txt_file.filename.endswith('.txt'):
             return render_template("batch.html", error="请上传一个TXT文件！")
@@ -61,7 +63,7 @@ def batch():
             return render_template("batch.html", error="请输入有效的源文件夹路径！")
 
         try:
-            # 保存TXT文件到临时路径
+            # 保存TXT到临时路径
             temp_txt_path = os.path.join(output_base, f"temp_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
             txt_file.save(temp_txt_path)
 
@@ -70,26 +72,34 @@ def batch():
             output_folder = os.path.join(output_base, f"batch_{timestamp}")
             names = create_folders_from_txt(temp_txt_path, output_folder)
 
-            # 步骤2：复制文件到每个文件夹
+            # 步骤2：复制文件
             copy_files_to_folders(source_folder, output_folder, names)
-
-            # 步骤3：合并每个文件夹的JPG到PDF
-            results = []
-            for name in names:
-                person_folder = os.path.join(output_folder, name)
-                output_pdf = os.path.join(DESKTOP_PATH, f"{name}.pdf")
-                jpg_count = merge_jpgs_to_pdf(person_folder, output_pdf)
-                results.append(f"{name}: 合并了 {jpg_count} 个JPG文件到 {output_pdf}")
 
             # 清理临时TXT
             os.remove(temp_txt_path)
 
-            return render_template("batch.html", results=results, error=None)
+            return render_template("batch.html", names=names, output_folder=output_folder, error=None)
 
         except Exception as e:
             return render_template("batch.html", error=f"批量处理失败：{str(e)}")
 
-    return render_template("batch.html", error=None, results=None)
+    return render_template("batch.html", error=None, names=None, output_folder=None)
+
+@app.route("/batch/merge", methods=["POST"])
+def batch_merge():
+    person_folder = request.form.get("personFolder").strip()
+    name = request.form.get("name").strip()
+
+    if not person_folder or not os.path.isdir(person_folder):
+        return {"error": "无效的文件夹路径！"}, 400
+
+    try:
+        output_pdf = os.path.join(DESKTOP_PATH, f"{name}.pdf")
+        jpg_count = merge_jpgs_to_pdf(person_folder, output_pdf)
+        return {"message": f"{name}: 合并了 {jpg_count} 个JPG文件到 {output_pdf}"}
+
+    except Exception as e:
+        return {"error": f"合并失败：{str(e)}"}, 500
 
 if __name__ == "__main__":
     app.run(debug=True)

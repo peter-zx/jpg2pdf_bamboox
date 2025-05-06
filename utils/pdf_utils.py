@@ -3,7 +3,7 @@ import img2pdf
 from PIL import Image
 
 def merge_jpgs_to_pdf(input_path, output_pdf):
-    """合并指定路径（文件夹或文件列表）的JPG到PDF"""
+    """合并指定.paths（文件夹或文件列表）的JPG到PDF"""
     if isinstance(input_path, list):
         jpg_paths = [p for p in input_path if p.lower().endswith(('.jpg', '.jpeg'))]
     else:

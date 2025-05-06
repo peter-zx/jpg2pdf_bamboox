@@ -1,30 +1,42 @@
 ```
-
 jpg2pdf/
-├── app.py              # Flask主程序，处理Web逻辑
-├── templates/          # HTML模板目录
-│   └── index.html      # WebUI界面
-├── README.md           # 项目说明
-├── .gitignore          # Git忽略文件
-├── requirements.txt    # 依赖清单
+├── app.py
+├── utils/
+│   ├── file_utils.py
+│   └── pdf_utils.py
+├── templates/
+│   ├── index.html
+│   └── batch.html
+├── static/
+│   ├── styles.css
+│   ├── script.js
+│   └── batch.js
+├── README.md
+├── .gitignore
+├── requirements.txt
+├── venv/
 
 ```
-
 JPG to PDF Converter
-一个基于Python和Flask的Web工具，用于将多个JPG文件合并成一个PDF文件，并保存到桌面指定文件夹。
+一个基于Python和Flask的Web工具，支持单文件和批量JPG到PDF转换。
 功能
+单文件转换
 
-通过Web界面选择多个JPG文件。
-显示选中的文件名列表，支持上下移动调整顺序。
-输入单一保存文件名，自动创建同名文件夹和PDF文件。
-自动在桌面创建文件夹（带时间戳），合并JPG为PDF并保存。
-显示错误提示（如文件格式错误）。
+选择多个JPG文件，显示文件名列表，支持上下移动调整顺序。
+输入保存文件名，自动创建同名文件夹和PDF文件。
+保存到桌面（带时间戳，如myfile_20250219_123456/myfile.pdf）。
+
+批量处理
+
+上传TXT文件（每行一个人员名字）。
+创建个人文件夹，复制指定文件夹的文件到每个人的文件夹。
+手动选择每个人的文件夹，合并其中的JPG为PDF，保存到桌面（文件名为人名）。
 
 环境要求
 
 Python 3.8+
 虚拟环境（推荐）
-依赖：Flask, img2pdf
+依赖：Flask, img2pdf, Pillow
 
 安装
 
@@ -46,19 +58,32 @@ Python 3.8+
 运行Flask应用：python app.py
 
 
-打开浏览器，访问http://127.0.0.1:5000。
-选择JPG文件，调整文件顺序，输入保存文件名，点击“合并并保存PDF”。
+打开浏览器：
+单文件转换：http://127.0.0.1:5000
+批量处理：http://127.0.0.1:5000/batch
 
-部署
 
-可部署到ECS，使用Nginx+Gunicorn（参考Flask官方文档）。
-确保服务器安装Python和依赖。
+
+使用
+
+单文件转换：
+选择JPG文件，调整顺序，输入保存文件名。
+点击“合并并保存PDF”。
+
+
+批量处理：
+上传包含人员名字的TXT文件。
+输入源文件夹路径（如D:\data）。
+点击“创建文件夹和复制文件”。
+手动输入每个人的文件夹路径，点击“合并”生成PDF。
+
+
 
 注意事项
 
 仅支持标准JPG文件（.jpg/.jpeg）。
-输出文件夹自动添加时间戳（如myfile_20250219_123456）。
-PDF文件保存在桌面指定文件夹（如myfile_20250219_123456/myfile.pdf）。
+批量处理支持常见文件格式（JPG, PNG, PDF, DOCX, TXT等）复制。
+输出文件夹和PDF保存在桌面，批量文件夹带时间戳。
 
 贡献
 欢迎提交Issue或Pull Request！
