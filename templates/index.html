@@ -6,19 +6,6 @@
   <title>JPG to PDF Converter</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-  <style>
-    .drop-zone {
-      border: 2px dashed #ccc;
-      padding: 20px;
-      text-align: center;
-      margin-top: 5px;
-      background-color: #f9fafb;
-    }
-    .drop-zone.dragover {
-      background-color: #e0f7fa;
-      border-color: #00bcd4;
-    }
-  </style>
 </head>
 <body class="bg-gray-100 py-8">
   <div class="container mx-auto max-w-3xl">
@@ -49,10 +36,7 @@
           <div class="mb-4">
             <label for="sourceFolder" class="block text-sm font-medium text-gray-700">源文件夹路径</label>
             <div class="flex items-center">
-              <input type="text" name="sourceFolder" id="sourceFolder" placeholder="拖放文件夹或输入路径（如 C:\data）" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-              <div class="drop-zone ml-2" ondrop="dropHandler(event)" ondragover="dragOverHandler(event)" ondragleave="dragLeaveHandler(event)">
-                拖放文件夹
-              </div>
+              <input type="text" name="sourceFolder" id="sourceFolder" placeholder="请输入源文件夹路径（如 C:\data）" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
               <button type="button" onclick="listFiles()" class="ml-2 bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">筛选要复制文件</button>
             </div>
             <p class="text-xs text-gray-500 mt-1">示例：C:\Users\YourName\Desktop\Folder（无需引号）</p>
@@ -75,23 +59,57 @@
       <form method="POST" enctype="multipart/form-data" id="uploadForm">
         <input type="hidden" name="action" value="single">
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">选择JPG文件</label>
-          <input type="file" name="jpgFiles" id="jpgFiles" accept="image/*" multiple
-                 class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+          <label class="block text-sm font-medium text-gray-700 mb-2">选择模式</label>
+          <div class="flex items-center">
+            <input type="radio" name="mode" value="single" id="singleMode" checked class="mr-2">
+            <label for="singleMode" class="mr-4">单文件夹模式</label>
+            <input type="radio" name="mode" value="multi" id="multiMode" class="mr-2">
+            <label for="multiMode">多层文件夹模式</label>
+          </div>
         </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">文件顺序</label>
-          <ul id="fileListSingle" class="list-disc pl-5"></ul>
-          <input type="hidden" name="fileOrder" id="fileOrder">
+
+        <!-- 单文件夹模式 -->
+        <div id="singleModeFields">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">选择JPG文件</label>
+            <input type="file" name="jpgFiles" id="jpgFiles" accept="image/*" multiple
+                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">文件顺序</label>
+            <ul id="fileListSingle" class="list-disc pl-5"></ul>
+            <input type="hidden" name="fileOrder" id="fileOrder">
+          </div>
+          <div class="mb-4">
+            <label for="saveName" class="block text-sm font-medium text-gray-700">保存文件名</label>
+            <input type="text" name="saveName" placeholder="请输入文件夹和PDF文件名" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+          </div>
         </div>
-        <div class="mb-4">
-          <label for="saveName" class="block text-sm font-medium text-gray-700">保存文件名</label>
-          <input type="text" name="saveName" placeholder="请输入文件夹和PDF文件名" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+
+        <!-- 多层文件夹模式 -->
+        <div id="multiModeFields" style="display: none;">
+          <div class="mb-4">
+            <label for="parentFolder" class="block text-sm font-medium text-gray-700">一级文件夹路径</label>
+            <div class="flex items-center">
+              <input type="text" name="parentFolder" id="parentFolder" placeholder="请输入一级文件夹路径（如 C:\FolderA）" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+              <button type="button" onclick="listSubfolders()" class="ml-2 bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">筛选子文件夹</button>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">示例：C:\Users\YourName\Desktop\FolderA（无需引号）</p>
+          </div>
+          <div class="mb-4" id="subfolderListContainer" style="display: none;">
+            <label class="block text-sm font-medium text-gray-700 mb-2">选择要转换的子文件夹</label>
+            <ul id="subfolderList" class="list-disc pl-5 max-h-40 overflow-y-auto"></ul>
+            <input type="hidden" name="selectedSubfolders" id="selectedSubfolders">
+          </div>
         </div>
+
         <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">合并并保存PDF</button>
       </form>
       {% if error %}
         <p class="mt-4 text-sm text-red-600 text-center">{{ error }}</p>
+      {% endif %}
+      {% if processed_folders %}
+        <p class="mt-4 text-sm text-green-600 text-center">已为以下子文件夹生成PDF：{{ processed_folders | join(', ') }}</p>
       {% endif %}
     </section>
   </div>
