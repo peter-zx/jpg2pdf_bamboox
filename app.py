@@ -38,7 +38,7 @@ def index():
                     output_folder = os.path.join(DESKTOP_PATH, f"batch_{timestamp}")
                     names = create_folders_from_txt(temp_txt_path, output_folder)
 
-                    # 步骤2：复制文件
+                    # 步骤2：复制文件（支持jpg, jpeg, png, pdf, docx, txt）
                     copy_files_to_folders(source_folder, output_folder, names)
 
                     # 清理临时TXT
@@ -59,13 +59,13 @@ def index():
             else:
                 for file in files:
                     if not file.filename.lower().endswith(('.jpg', '.jpeg')):
-                        error = "请确保所有文件都是JPG格式！"
+                        error = "请确保至少有一个文件是JPG格式！"
                         break
 
                 if not error:
                     try:
-                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                        output_folder_single = os.path.join(DESKTOP_PATH, f"{save_name}_{timestamp}")
+                        # 使用saveName作为文件夹名，无时间戳
+                        output_folder_single = os.path.join(DESKTOP_PATH, save_name)
                         os.makedirs(output_folder_single, exist_ok=True)
 
                         jpg_paths = []
@@ -74,12 +74,15 @@ def index():
                         for file in ordered_files:
                             jpg_path = os.path.join(output_folder_single, file.filename)
                             file.save(jpg_path)
-                            jpg_paths.append(jpg_path)
+                            if file.filename.lower().endswith(('.jpg', '.jpeg')):
+                                jpg_paths.append(jpg_path)
 
-                        output_pdf = os.path.join(output_folder_single, f"{save_name}.pdf")
-                        merge_jpgs_to_pdf(jpg_paths, output_pdf)
-
-                        return send_file(output_pdf, as_attachment=True)
+                        if jpg_paths:
+                            output_pdf = os.path.join(output_folder_single, f"{save_name}.pdf")
+                            merge_jpgs_to_pdf(jpg_paths, output_pdf)
+                            return send_file(output_pdf, as_attachment=True)
+                        else:
+                            error = "未找到可转换的JPG文件！"
 
                     except Exception as e:
                         error = f"转换失败：{str(e)}"
