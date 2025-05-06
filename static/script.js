@@ -1,6 +1,6 @@
 document.getElementById('jpgFiles').addEventListener('change', function(e) {
   const files = e.target.files;
-  const fileList = document.getElementById('fileList');
+  const fileList = document.getElementById('fileListSingle');
   fileList.innerHTML = '';
 
   Array.from(files).forEach((file, index) => {
@@ -23,10 +23,10 @@ document.getElementById('jpgFiles').addEventListener('change', function(e) {
 });
 
 // 上下移动事件
-document.getElementById('fileList').addEventListener('click', function(e) {
+document.getElementById('fileListSingle').addEventListener('click', function(e) {
   if (e.target.classList.contains('move-up') || e.target.classList.contains('move-down')) {
     const li = e.target.closest('.file-item');
-    const fileList = document.getElementById('fileList');
+    const fileList = document.getElementById('fileListSingle');
     const index = Array.from(fileList.children).indexOf(li);
 
     if (e.target.classList.contains('move-up') && index > 0) {
@@ -46,7 +46,7 @@ document.getElementById('fileList').addEventListener('click', function(e) {
 });
 
 function updateFileOrder() {
-  const fileList = document.getElementById('fileList');
+  const fileList = document.getElementById('fileListSingle');
   const fileOrder = Array.from(fileList.children).map(item => item.dataset.filename);
   document.getElementById('fileOrder').value = fileOrder.join(',');
 }
@@ -55,3 +55,31 @@ function updateFileOrder() {
 document.getElementById('uploadForm').addEventListener('submit', () => {
   updateFileOrder();
 });
+
+// 拖放处理
+function dragOverHandler(ev) {
+  ev.preventDefault();
+  ev.target.classList.add('dragover');
+}
+
+function dragLeaveHandler(ev) {
+  ev.target.classList.remove('dragover');
+}
+
+function dropHandler(ev) {
+  ev.preventDefault();
+  ev.target.classList.remove('dragover');
+  const items = ev.dataTransfer.items;
+  if (items) {
+    for (let item of items) {
+      if (item.webkitGetAsEntry) {
+        const entry = item.webkitGetAsEntry();
+        if (entry && entry.isDirectory) {
+          const path = entry.fullPath.replace(/\/[^\/]+$/, '');
+          document.getElementById('sourceFolder').value = path;
+          break;
+        }
+      }
+    }
+  }
+}
