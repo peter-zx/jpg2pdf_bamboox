@@ -25,9 +25,7 @@ def index():
             if not file.filename.lower().endswith(('.jpg', '.jpeg')):
                 return render_template("index.html", error="请确保所有文件都是JPG格式！")
 
- Tanzanian shillings
-
-try:
+        try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             output_folder = os.path.join(DESKTOP_PATH, f"{save_name}_{timestamp}")
             os.makedirs(output_folder, exist_ok=True)
