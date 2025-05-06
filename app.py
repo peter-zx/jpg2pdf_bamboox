@@ -4,6 +4,7 @@ from datetime import datetime
 from utils.file_utils import create_folders_from_txt, copy_selected_files_to_folders
 from utils.pdf_utils import merge_jpgs_to_pdf
 import urllib.parse
+import time
 
 app = Flask(__name__)
 
@@ -17,6 +18,8 @@ def index():
     output_folder = None
     files_in_folder = None
     source_folder = None
+    progress = None
+    completed = None
 
     if request.method == "POST":
         action = request.form.get("action")
@@ -41,12 +44,15 @@ def index():
                         txt_file.save(temp_txt_path)
 
                         # 步骤1：创建个人文件夹
-                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                        output_folder = os.path.join(DESKTOP_PATH, f"batch_{timestamp}")
+                        timestamp = datetime.now().strftime("%m%d_%H%M")
+                        output_folder = os.path.join(DESKTOP_PATH, f"批量文件复制_{timestamp}")
                         names = create_folders_from_txt(temp_txt_path, output_folder)
+                        progress = f"已创建 {len(names)} 个文件夹"
 
                         # 步骤2：复制选中的文件
                         copy_selected_files_to_folders(source_folder, output_folder, names, selected_files)
+                        progress = f"已复制文件到 {len(names)} 个文件夹"
+                        completed = "创建完毕"
 
                         # 清理临时TXT
                         os.remove(temp_txt_path)
@@ -93,7 +99,7 @@ def index():
                     except Exception as e:
                         error = f"转换失败：{str(e)}"
 
-    return render_template("index.html", error=error, names=names, output_folder=output_folder, files_in_folder=files_in_folder, source_folder=source_folder)
+    return render_template("index.html", error=error, names=names, output_folder=output_folder, files_in_folder=files_in_folder, source_folder=source_folder, progress=progress, completed=completed)
 
 @app.route("/list_files", methods=["POST"])
 def list_files():

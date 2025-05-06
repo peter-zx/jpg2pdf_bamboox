@@ -18,6 +18,12 @@
       {% if names %}
         <h3 class="text-lg font-semibold mb-4">文件夹创建和文件复制完成</h3>
         <p class="text-sm text-gray-600">输出路径：{{ output_folder }}</p>
+        {% if progress %}
+          <p class="mt-2 text-sm text-green-600">{{ progress }}</p>
+        {% endif %}
+        {% if completed %}
+          <p class="mt-2 text-sm text-green-600">{{ completed }}</p>
+        {% endif %}
       {% else %}
         <form method="POST" enctype="multipart/form-data" id="batchForm">
           <input type="hidden" name="action" value="batch">
@@ -31,14 +37,14 @@
             <label for="sourceFolder" class="block text-sm font-medium text-gray-700">源文件夹路径</label>
             <div class="flex items-center">
               <input type="text" name="sourceFolder" id="sourceFolder" placeholder="请输入源文件夹路径（如 D:\data）" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-              <button type="button" onclick="listFiles()" class="ml-2 bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">挑选要复制的文件</button>
+              <button type="button" onclick="listFiles()" class="ml-2 bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">筛选要复制文件</button>
             </div>
           </div>
           <div class="mb-4" id="fileListContainer" style="display: none;">
             <label class="block text-sm font-medium text-gray-700 mb-2">选择要复制的文件</label>
             <ul id="fileList" class="list-disc pl-5 max-h-40 overflow-y-auto"></ul>
           </div>
-          <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">确认复制</button>
+          <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">确认建立与复制</button>
         </form>
       {% endif %}
       {% if error %}
