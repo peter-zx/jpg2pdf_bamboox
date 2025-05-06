@@ -22,7 +22,6 @@ document.getElementById('jpgFiles').addEventListener('change', function(e) {
   updateFileOrder();
 });
 
-// 上下移动事件
 document.getElementById('fileListSingle').addEventListener('click', function(e) {
   if (e.target.classList.contains('move-up') || e.target.classList.contains('move-down')) {
     const li = e.target.closest('.file-item');
@@ -50,16 +49,6 @@ function updateFileOrder() {
   document.getElementById('fileOrder').value = fileOrder.join(',');
 }
 
-document.getElementById('uploadForm').addEventListener('submit', () => {
-  updateFileOrder();
-  if (document.getElementById('multiMode').checked) {
-    const selectedSubfolders = Array.from(document.querySelectorAll('input[name="subfoldersToConvert"]:checked'))
-      .map(checkbox => checkbox.value);
-    document.getElementById('selectedSubfolders').value = selectedSubfolders.join(',');
-  }
-});
-
-// 模式切换
 document.getElementById('singleMode').addEventListener('change', function() {
   document.getElementById('singleModeFields').style.display = 'block';
   document.getElementById('multiModeFields').style.display = 'none';
@@ -104,4 +93,74 @@ function listSubfolders() {
     }
   })
   .catch(error => alert(`读取子文件夹失败：${error}`));
+}
+
+function processForm() {
+  const form = document.getElementById('uploadForm');
+  const formData = new FormData(form);
+  const submitButton = document.getElementById('submitButton');
+  const progressContainer = document.getElementById('progressContainer');
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+  const completedText = document.getElementById('completedText');
+  const errorText = document.getElementById('errorText');
+
+  submitButton.disabled = true;
+  submitButton.textContent = '处理中...';
+  progressContainer.style.display = 'block';
+  progressFill.style.width = '0%';
+  progressText.style.display = 'none';
+  completedText.style.display = 'none';
+  errorText.style.display = 'none';
+
+  if (document.getElementById('multiMode').checked) {
+    const selectedSubfolders = Array.from(document.querySelectorAll('input[name="subfoldersToConvert"]:checked'))
+      .map(checkbox => checkbox.value);
+    formData.set('selectedSubfolders', selectedSubfolders.join(','));
+
+    const total = selectedSubfolders.length;
+    let processed = 0;
+
+    const interval = setInterval(() => {
+      processed++;
+      const percentage = (processed / total) * 100;
+      progressFill.style.width = `${percentage}%`;
+      if (processed >= total) clearInterval(interval);
+    }, 500);
+  } else {
+    progressFill.style.width = '100%';
+  }
+
+  fetch('/process_single', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    submitButton.disabled = false;
+    submitButton.textContent = '合并并保存PDF';
+
+    if (data.error) {
+      errorText.textContent = data.error;
+      errorText.style.display = 'block';
+    } else {
+      if (data.progress) {
+        progressText.textContent = data.progress;
+        progressText.style.display = 'block';
+      }
+      if (data.completed) {
+        completedText.textContent = data.completed;
+        completedText.style.display = 'block';
+      }
+      if (data.processed_folders && data.processed_folders.length > 0) {
+        completedText.textContent += `\n已为以下子文件夹生成PDF：${data.processed_folders.join(', ')}`;
+      }
+    }
+  })
+  .catch(error => {
+    submitButton.disabled = false;
+    submitButton.textContent = '合并并保存PDF';
+    errorText.textContent = `处理失败：${error}`;
+    errorText.style.display = 'block';
+  });
 }

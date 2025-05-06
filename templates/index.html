@@ -6,6 +6,20 @@
   <title>JPG to PDF Converter</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    .progress-bar {
+      width: 100%;
+      background-color: #f3f4f6;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      margin-top: 1rem;
+    }
+    .progress-fill {
+      height: 1rem;
+      background-color: #10b981;
+      transition: width 0.3s ease-in-out;
+    }
+  </style>
 </head>
 <body class="bg-gray-100 py-8">
   <div class="container mx-auto max-w-3xl">
@@ -15,14 +29,14 @@
     <!-- 批量处理块 -->
     <section class="bg-white p-8 rounded-lg shadow-lg mb-8">
       <h2 class="text-2xl font-bold text-center mb-6">批量处理</h2>
-      {% if names %}
+      {% if batch.names %}
         <h3 class="text-lg font-semibold mb-4">文件夹创建和文件复制完成</h3>
-        <p class="text-sm text-gray-600">输出路径：{{ output_folder }}</p>
-        {% if progress %}
-          <p class="mt-2 text-sm text-green-600">{{ progress }}</p>
+        <p class="text-sm text-gray-600">输出路径：{{ batch.output_folder }}</p>
+        {% if batch.progress %}
+          <p class="mt-2 text-sm text-green-600">{{ batch.progress }}</p>
         {% endif %}
-        {% if completed %}
-          <p class="mt-2 text-sm text-green-600">{{ completed }}</p>
+        {% if batch.completed %}
+          <p class="mt-2 text-sm text-green-600">{{ batch.completed }}</p>
         {% endif %}
       {% else %}
         <form method="POST" enctype="multipart/form-data" id="batchForm">
@@ -48,15 +62,15 @@
           <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">确认建立与复制</button>
         </form>
       {% endif %}
-      {% if error %}
-        <p class="mt-4 text-sm text-red-600 text-center">{{ error }}</p>
+      {% if batch.error %}
+        <p class="mt-4 text-sm text-red-600 text-center">{{ batch.error }}</p>
       {% endif %}
     </section>
 
     <!-- 单文件转换块 -->
     <section class="bg-white p-8 rounded-lg shadow-lg">
       <h2 class="text-2xl font-bold text-center mb-6">单文件JPG到PDF转换</h2>
-      <form method="POST" enctype="multipart/form-data" id="uploadForm">
+      <form enctype="multipart/form-data" id="uploadForm">
         <input type="hidden" name="action" value="single">
         <div class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-2">选择模式</label>
@@ -103,14 +117,14 @@
           </div>
         </div>
 
-        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">合并并保存PDF</button>
+        <button type="button" id="submitButton" onclick="processForm()" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">合并并保存PDF</button>
+        <div id="progressContainer" class="progress-bar" style="display: none;">
+          <div id="progressFill" class="progress-fill" style="width: 0%;"></div>
+        </div>
+        <p id="progressText" class="mt-4 text-sm text-blue-600 text-center" style="display: none;"></p>
+        <p id="completedText" class="mt-4 text-sm text-green-600 text-center" style="display: none;"></p>
+        <p id="errorText" class="mt-4 text-sm text-red-600 text-center" style="display: none;"></p>
       </form>
-      {% if error %}
-        <p class="mt-4 text-sm text-red-600 text-center">{{ error }}</p>
-      {% endif %}
-      {% if processed_folders %}
-        <p class="mt-4 text-sm text-green-600 text-center">已为以下子文件夹生成PDF：{{ processed_folders | join(', ') }}</p>
-      {% endif %}
     </section>
   </div>
   <script src="{{ url_for('static', filename='script.js') }}"></script>

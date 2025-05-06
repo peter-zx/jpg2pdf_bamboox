@@ -1,25 +1,24 @@
+body {
+  font-family: Arial, sans-serif;
+}
+
 .file-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
-  margin-bottom: 8px;
-  background-color: #f9fafb;
+  margin-bottom: 0.5rem;
 }
+
 .file-item button {
-  padding: 4px 8px;
-  background-color: #3b82f6;
-  color: white;
+  background-color: #e5e7eb;
   border: none;
-  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  margin-left: 0.5rem;
   cursor: pointer;
+  border-radius: 0.25rem;
 }
-.file-item button:hover {
-  background-color: #2563eb;
-}
+
 .file-item button:disabled {
-  background-color: #d1d5db;
+  background-color: #f3f4f6;
   cursor: not-allowed;
 }

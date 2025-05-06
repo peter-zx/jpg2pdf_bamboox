@@ -1,31 +1,33 @@
-import os
-import img2pdf
 from PIL import Image
+import os
 
-def merge_jpgs_to_pdf(input_path, output_pdf):
-    """合并指定路径（文件夹或文件列表）的JPG到PDF"""
-    if isinstance(input_path, list):
-        jpg_paths = [p for p in input_path if p.lower().endswith(('.jpg', '.jpeg'))]
-    else:
-        jpg_paths = [
-            os.path.join(input_path, f) for f in os.listdir(input_path)
-            if f.lower().endswith(('.jpg', '.jpeg')) and os.path.isfile(os.path.join(input_path, f))
-        ]
-
+def merge_jpgs_to_pdf(jpg_paths, output_pdf):
     if not jpg_paths:
-        return 0
+        print("没有提供JPG文件路径")
+        return False
 
-    # 转换为JPG（确保兼容）
-    valid_paths = []
-    for path in jpg_paths:
+    images = []
+    for jpg_path in jpg_paths:
         try:
-            with Image.open(path) as img:
-                if img.format in ['JPEG']:
-                    valid_paths.append(path)
-        except:
+            if os.path.exists(jpg_path) and os.access(jpg_path, os.R_OK):
+                img = Image.open(jpg_path)
+                if img.mode != 'RGB':
+                    img = img.convert('RGB')
+                images.append(img)
+            else:
+                print(f"文件不可访问或不存在：{jpg_path}")
+        except Exception as e:
+            print(f"无法打开文件 {jpg_path}：{str(e)}")
             continue
 
-    if valid_paths:
-        with open(output_pdf, "wb") as f:
-            f.write(img2pdf.convert(valid_paths))
-    return len(valid_paths)
+    if not images:
+        print("没有有效的图像文件可以合并")
+        return False
+
+    try:
+        images[0].save(output_pdf, save_all=True, append_images=images[1:], quality=95)
+        print(f"PDF已生成：{output_pdf}")
+        return True
+    except Exception as e:
+        print(f"PDF合并失败：{str(e)}")
+        return False

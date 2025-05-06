@@ -1,20 +1,3 @@
-document.getElementById('batchForm').addEventListener('submit', function(e) {
-  const sourceFolder = document.getElementById('sourceFolder').value.trim();
-  if (!sourceFolder) {
-    e.preventDefault();
-    alert('请输入源文件夹路径！');
-    return;
-  }
-
-  const selectedFiles = Array.from(document.querySelectorAll('input[name="filesToCopy"]:checked'))
-    .map(checkbox => checkbox.value);
-  document.getElementById('selectedFiles').value = selectedFiles.join(',');
-
-  const button = document.querySelector('#batchForm button[type="submit"]');
-  button.textContent = '复制中...';
-  button.disabled = true;
-});
-
 function listFiles() {
   const sourceFolder = document.getElementById('sourceFolder').value.trim();
   if (!sourceFolder) {
@@ -49,3 +32,9 @@ function listFiles() {
   })
   .catch(error => alert(`读取文件失败：${error}`));
 }
+
+document.getElementById('batchForm').addEventListener('submit', function() {
+  const selectedFiles = Array.from(document.querySelectorAll('input[name="filesToCopy"]:checked'))
+    .map(checkbox => checkbox.value);
+  document.getElementById('selectedFiles').value = selectedFiles.join(',');
+});
