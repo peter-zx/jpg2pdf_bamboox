@@ -16,22 +16,12 @@
     <section class="bg-white p-8 rounded-lg shadow-lg mb-8">
       <h2 class="text-2xl font-bold text-center mb-6">批量处理</h2>
       {% if names %}
-        <h3 class="text-lg font-semibold mb-4">选择文件夹以合并JPG</h3>
-        <ul class="list-disc pl-5 mb-4">
-          {% for name in names %}
-            <li class="flex justify-between items-center py-2">
-              <span>{{ name }}</span>
-              <div>
-                <input type="text" id="folder_{{ name }}" placeholder="输入文件夹路径" class="p-1 border rounded text-sm w-40">
-                <button onclick="mergeFolder('{{ name }}')" class="ml-2 bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 text-sm">合并</button>
-              </div>
-            </li>
-          {% endfor %}
-        </ul>
-        <p class="text-sm text-gray-600">文件夹路径示例：{{ output_folder }}</p>
+        <h3 class="text-lg font-semibold mb-4">文件夹创建和文件复制完成</h3>
+        <p class="text-sm text-gray-600">输出路径：{{ output_folder }}</p>
       {% else %}
         <form method="POST" enctype="multipart/form-data" id="batchForm">
           <input type="hidden" name="action" value="batch">
+          <input type="hidden" name="selectedFiles" id="selectedFiles">
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">上传人员名单（TXT）</label>
             <input type="file" name="txtFile" accept=".txt"
@@ -40,15 +30,18 @@
           <div class="mb-4">
             <label for="sourceFolder" class="block text-sm font-medium text-gray-700">源文件夹路径</label>
             <div class="flex items-center">
-              <input type="text" name="sourceFolder" id="sourceFolder" placeholder="请输入或选择文件夹路径" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-              <input type="file" id="folderSelect" webkitdirectory directory style="display: none;">
-              <button type="button" onclick="document.getElementById('folderSelect').click()" class="ml-2 bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">选择</button>
+              <input type="text" name="sourceFolder" id="sourceFolder" placeholder="请输入源文件夹路径（如 D:\data）" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+              <button type="button" onclick="listFiles()" class="ml-2 bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">挑选要复制的文件</button>
             </div>
           </div>
-          <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">创建文件夹和复制文件</button>
+          <div class="mb-4" id="fileListContainer" style="display: none;">
+            <label class="block text-sm font-medium text-gray-700 mb-2">选择要复制的文件</label>
+            <ul id="fileList" class="list-disc pl-5 max-h-40 overflow-y-auto"></ul>
+          </div>
+          <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">确认复制</button>
         </form>
       {% endif %}
-      {% if error and not names %}
+      {% if error %}
         <p class="mt-4 text-sm text-red-600 text-center">{{ error }}</p>
       {% endif %}
     </section>
@@ -65,7 +58,7 @@
         </div>
         <div class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-2">文件顺序</label>
-          <ul id="fileList" class="list-disc pl-5"></ul>
+          <ul id="fileListSingle" class="list-disc pl-5"></ul>
           <input type="hidden" name="fileOrder" id="fileOrder">
         </div>
         <div class="mb-4">
@@ -73,9 +66,6 @@
           <input type="text" name="saveName" placeholder="请输入文件夹和PDF文件名" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
         </div>
         <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">合并并保存PDF</button>
-        {% if error and names %}
-          <p class="mt-4 text-sm text-red-600 text-center">{{ error }}</p>
-        {% endif %}
       </form>
     </section>
   </div>

@@ -1,36 +1,51 @@
-document.getElementById('batchForm').addEventListener('submit', function() {
-  const button = document.querySelector('#batchForm button[type="submit"]');
-  button.textContent = '处理中...';
-  button.disabled = true;
-});
-
-document.getElementById('folderSelect').addEventListener('change', function(e) {
-  const folderPath = e.target.files[0].webkitRelativePath.split('/')[0];
-  const absolutePath = e.target.files[0].path.replace(folderPath, '').replace(/\\[^\\]+$/, '');
-  document.getElementById('sourceFolder').value = absolutePath;
-});
-
-function mergeFolder(name) {
-  const folderInput = document.getElementById(`folder_${name}`);
-  const folderPath = folderInput.value.trim();
-  if (!folderPath) {
-    alert('请输入文件夹路径！');
+document.getElementById('batchForm').addEventListener('submit', function(e) {
+  const sourceFolder = document.getElementById('sourceFolder').value.trim();
+  if (!sourceFolder) {
+    e.preventDefault();
+    alert('请输入源文件夹路径！');
     return;
   }
 
-  fetch('/batch/merge', {
+  const selectedFiles = Array.from(document.querySelectorAll('input[name="filesToCopy"]:checked'))
+    .map(checkbox => checkbox.value);
+  document.getElementById('selectedFiles').value = selectedFiles.join(',');
+
+  const button = document.querySelector('#batchForm button[type="submit"]');
+  button.textContent = '复制中...';
+  button.disabled = true;
+});
+
+function listFiles() {
+  const sourceFolder = document.getElementById('sourceFolder').value.trim();
+  if (!sourceFolder) {
+    alert('请输入源文件夹路径！');
+    return;
+  }
+
+  fetch('/list_files', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `personFolder=${encodeURIComponent(folderPath)}&name=${encodeURIComponent(name)}`
+    body: `sourceFolder=${encodeURIComponent(sourceFolder)}`
   })
   .then(response => response.json())
   .then(data => {
     if (data.error) {
       alert(data.error);
     } else {
-      alert(data.message);
-      folderInput.value = '';
+      const fileList = document.getElementById('fileList');
+      const fileListContainer = document.getElementById('fileListContainer');
+      fileList.innerHTML = '';
+      data.files.forEach(file => {
+        const li = document.createElement('li');
+        li.className = 'flex items-center';
+        li.innerHTML = `
+          <input type="checkbox" name="filesToCopy" value="${file}" class="mr-2">
+          <span>${file}</span>
+        `;
+        fileList.appendChild(li);
+      });
+      fileListContainer.style.display = 'block';
     }
   })
-  .catch(error => alert(`请求失败：${error}`));
+  .catch(error => alert(`读取文件失败：${error}`));
 }

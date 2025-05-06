@@ -13,11 +13,14 @@ def create_folders_from_txt(txt_path, output_folder):
                 os.makedirs(folder_path, exist_ok=True)
     return names
 
-def copy_files_to_folders(source_folder, output_folder, names):
-    """将源文件夹的文件复制到每个人的文件夹"""
+def copy_selected_files_to_folders(source_folder, output_folder, names, selected_files):
+    """将源文件夹中选中的文件复制到每个人的文件夹"""
+    if not selected_files:
+        return  # 如果没有选择文件，则不执行复制
+
     for name in names:
         dest_folder = os.path.join(output_folder, name)
-        for filename in os.listdir(source_folder):
+        for filename in selected_files:
             src_path = os.path.join(source_folder, filename)
             dest_path = os.path.join(dest_folder, filename)
             if os.path.isfile(src_path):

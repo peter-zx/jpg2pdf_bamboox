@@ -1,7 +1,7 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, jsonify
 import os
 from datetime import datetime
-from utils.file_utils import create_folders_from_txt, copy_files_to_folders
+from utils.file_utils import create_folders_from_txt, copy_selected_files_to_folders
 from utils.pdf_utils import merge_jpgs_to_pdf
 import urllib.parse
 
@@ -15,38 +15,44 @@ def index():
     error = None
     names = None
     output_folder = None
-    results = None
+    files_in_folder = None
+    source_folder = None
 
     if request.method == "POST":
         action = request.form.get("action")
 
         if action == "batch":
             txt_file = request.files.get("txtFile")
-            source_folder = urllib.parse.unquote(request.form.get("sourceFolder")).strip()
-
-            if not txt_file or not txt_file.filename.endswith('.txt'):
-                error = "请上传一个TXT文件！"
-            elif not source_folder or not os.path.isdir(source_folder):
-                error = "请输入有效的源文件夹路径！"
+            source_folder_raw = request.form.get("sourceFolder")
+            if source_folder_raw is None:
+                error = "请提供源文件夹路径！"
             else:
-                try:
-                    # 保存TXT到临时路径
-                    temp_txt_path = os.path.join(DESKTOP_PATH, f"temp_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
-                    txt_file.save(temp_txt_path)
+                source_folder = urllib.parse.unquote(source_folder_raw).strip()
+                selected_files = request.form.get("selectedFiles", "").split(",") if request.form.get("selectedFiles") else []
 
-                    # 步骤1：创建个人文件夹
-                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                    output_folder = os.path.join(DESKTOP_PATH, f"batch_{timestamp}")
-                    names = create_folders_from_txt(temp_txt_path, output_folder)
+                if not txt_file or not txt_file.filename.endswith('.txt'):
+                    error = "请上传一个TXT文件！"
+                elif not source_folder or not os.path.isdir(source_folder):
+                    error = "请输入有效的源文件夹路径！"
+                else:
+                    try:
+                        # 保存TXT到临时路径
+                        temp_txt_path = os.path.join(DESKTOP_PATH, f"temp_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
+                        txt_file.save(temp_txt_path)
 
-                    # 步骤2：复制文件（支持jpg, jpeg, png, pdf, docx, txt）
-                    copy_files_to_folders(source_folder, output_folder, names)
+                        # 步骤1：创建个人文件夹
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        output_folder = os.path.join(DESKTOP_PATH, f"batch_{timestamp}")
+                        names = create_folders_from_txt(temp_txt_path, output_folder)
 
-                    # 清理临时TXT
-                    os.remove(temp_txt_path)
+                        # 步骤2：复制选中的文件
+                        copy_selected_files_to_folders(source_folder, output_folder, names, selected_files)
 
-                except Exception as e:
-                    error = f"批量处理失败：{str(e)}"
+                        # 清理临时TXT
+                        os.remove(temp_txt_path)
+
+                    except Exception as e:
+                        error = f"批量处理失败：{str(e)}"
 
         elif action == "single":
             files = request.files.getlist("jpgFiles")
@@ -65,7 +71,6 @@ def index():
 
                 if not error:
                     try:
-                        # 使用saveName作为文件夹名，无时间戳
                         output_folder_single = os.path.join(DESKTOP_PATH, save_name)
                         os.makedirs(output_folder_single, exist_ok=True)
 
@@ -88,23 +93,23 @@ def index():
                     except Exception as e:
                         error = f"转换失败：{str(e)}"
 
-    return render_template("index.html", error=error, names=names, output_folder=output_folder, results=results)
+    return render_template("index.html", error=error, names=names, output_folder=output_folder, files_in_folder=files_in_folder, source_folder=source_folder)
 
-@app.route("/batch/merge", methods=["POST"])
-def batch_merge():
-    person_folder = urllib.parse.unquote(request.form.get("personFolder")).strip()
-    name = request.form.get("name").strip()
+@app.route("/list_files", methods=["POST"])
+def list_files():
+    source_folder_raw = request.form.get("sourceFolder")
+    if source_folder_raw is None:
+        return jsonify({"error": "请提供源文件夹路径！"}), 400
 
-    if not person_folder or not os.path.isdir(person_folder):
-        return {"error": "无效的文件夹路径！"}, 400
+    source_folder = urllib.parse.unquote(source_folder_raw).strip()
+    if not source_folder or not os.path.isdir(source_folder):
+        return jsonify({"error": "无效的文件夹路径！"}), 400
 
     try:
-        output_pdf = os.path.join(DESKTOP_PATH, f"{name}.pdf")
-        jpg_count = merge_jpgs_to_pdf(person_folder, output_pdf)
-        return {"message": f"{name}: 合并了 {jpg_count} 个JPG文件到 {output_pdf}"}
-
+        files = [f for f in os.listdir(source_folder) if os.path.isfile(os.path.join(source_folder, f))]
+        return jsonify({"files": files})
     except Exception as e:
-        return {"error": f"合并失败：{str(e)}"}, 500
+        return jsonify({"error": f"读取文件失败：{str(e)}"}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
