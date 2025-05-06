@@ -39,7 +39,11 @@
           </div>
           <div class="mb-4">
             <label for="sourceFolder" class="block text-sm font-medium text-gray-700">源文件夹路径</label>
-            <input type="text" name="sourceFolder" id="sourceFolder" placeholder="请输入源文件夹路径（如 D:\data）" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+            <div class="flex items-center">
+              <input type="text" name="sourceFolder" id="sourceFolder" placeholder="请输入或选择文件夹路径" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+              <input type="file" id="folderSelect" webkitdirectory directory style="display: none;">
+              <button type="button" onclick="document.getElementById('folderSelect').click()" class="ml-2 bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">选择</button>
+            </div>
           </div>
           <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">创建文件夹和复制文件</button>
         </form>

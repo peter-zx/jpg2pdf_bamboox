@@ -4,6 +4,12 @@ document.getElementById('batchForm').addEventListener('submit', function() {
   button.disabled = true;
 });
 
+document.getElementById('folderSelect').addEventListener('change', function(e) {
+  const folderPath = e.target.files[0].webkitRelativePath.split('/')[0];
+  const absolutePath = e.target.files[0].path.replace(folderPath, '').replace(/\\[^\\]+$/, '');
+  document.getElementById('sourceFolder').value = absolutePath;
+});
+
 function mergeFolder(name) {
   const folderInput = document.getElementById(`folder_${name}`);
   const folderPath = folderInput.value.trim();

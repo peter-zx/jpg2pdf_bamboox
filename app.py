@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from utils.file_utils import create_folders_from_txt, copy_files_to_folders
 from utils.pdf_utils import merge_jpgs_to_pdf
+import urllib.parse
 
 app = Flask(__name__)
 
@@ -21,7 +22,7 @@ def index():
 
         if action == "batch":
             txt_file = request.files.get("txtFile")
-            source_folder = request.form.get("sourceFolder").strip()
+            source_folder = urllib.parse.unquote(request.form.get("sourceFolder")).strip()
 
             if not txt_file or not txt_file.filename.endswith('.txt'):
                 error = "请上传一个TXT文件！"
@@ -91,7 +92,7 @@ def index():
 
 @app.route("/batch/merge", methods=["POST"])
 def batch_merge():
-    person_folder = request.form.get("personFolder").strip()
+    person_folder = urllib.parse.unquote(request.form.get("personFolder")).strip()
     name = request.form.get("name").strip()
 
     if not person_folder or not os.path.isdir(person_folder):
