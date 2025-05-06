@@ -1,20 +1,20 @@
 ```
+
 jpg2pdf/
-├── app.py
-├── utils/
-│   ├── file_utils.py
-│   └── pdf_utils.py
-├── templates/
-│   ├── index.html
-│   └── batch.html
-├── static/
-│   ├── styles.css
-│   ├── script.js
-│   └── batch.js
-├── README.md
-├── .gitignore
-├── requirements.txt
-├── venv/
+├── app.py               # Flask 应用程序的主文件，包含路由、视图函数等核心逻辑。
+├── utils/               # 存放实用工具函数的目录
+│   ├── file_utils.py    # 包含文件操作相关的实用函数，例如创建文件夹、复制文件等。
+│   └── pdf_utils.py     # 包含 PDF 处理相关的实用函数，例如合并 JPG 图片为 PDF 等。
+├── templates/           # 存放 HTML 模板文件的目录，用于前端页面的渲染
+│   └── index.html       # 应用程序的首页 HTML 文件，包含用户界面结构。
+├── static/              # 存放静态资源的目录，例如 CSS、JavaScript、图片等
+│   ├── styles.css       # 应用程序的样式表文件，控制页面的外观。
+│   ├── script.js        # 应用程序的主要 JavaScript 文件，处理前端交互逻辑。
+│   └── batch.js         # 可能包含用于批量处理功能的 JavaScript 代码。
+├── README.md            # 项目的说明文件，通常包含项目简介、使用方法、安装步骤等。
+├── .gitignore           # 指定 Git 版本控制系统应该忽略的文件和目录，例如虚拟环境、临时文件等。
+├── requirements.txt     # 列出项目依赖的 Python 包及其版本，用于安装项目所需的运行环境。
+├── venv/                # Python 的虚拟环境目录，用于隔离项目的依赖，避免与其他项目冲突。
 
 ```
 JPG to PDF Converter
