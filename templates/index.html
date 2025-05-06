@@ -7,31 +7,76 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-  <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg">
-    <h1 class="text-2xl font-bold text-center mb-6">JPG to PDF Converter</h1>
-    <form method="POST" enctype="multipart/form-data" id="uploadForm">
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 mb-2">选择JPG文件</label>
-        <input type="file" name="jpgFiles" id="jpgFiles" accept="image/jpeg" multiple
-               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-      </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 mb-2">文件顺序</label>
-        <ul id="fileList" class="list-disc pl-5"></ul>
-        <input type="hidden" name="fileOrder" id="fileOrder">
-      </div>
-      <div class="mb-4">
-        <label for="saveName" class="block text-sm font-medium text-gray-700">保存文件名</label>
-        <input type="text" name="saveName" placeholder="请输入文件夹和PDF文件名" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-      </div>
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">合并并保存PDF</button>
-      {% if error %}
+<body class="bg-gray-100 py-8">
+  <div class="container mx-auto max-w-3xl">
+    <!-- 批量处理块 -->
+    <section class="bg-white p-8 rounded-lg shadow-lg mb-8">
+      <h1 class="text-2xl font-bold text-center mb-6">批量处理</h1>
+      {% if names %}
+        <h2 class="text-lg font-semibold mb-4">选择文件夹以合并JPG</h2>
+        <ul class="list-disc pl-5 mb-4">
+          {% for name in names %}
+            <li class="flex justify-between items-center py-2">
+              <span>{{ name }}</span>
+              <div>
+                <input type="text" id="folder_{{ name }}" placeholder="输入或选择文件夹路径" class="p-1 border rounded text-sm w-40">
+                <button onclick="mergeFolder('{{ name }}')" class="ml-2 bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 text-sm">合并</button>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+        <p class="text-sm text-gray-600">文件夹路径示例：{{ output_folder }}</p>
+      {% else %}
+        <form method="POST" enctype="multipart/form-data" id="batchForm">
+          <input type="hidden" name="action" value="batch">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">上传人员名单（TXT）</label>
+            <input type="file" name="txtFile" accept=".txt"
+                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+          </div>
+          <div class="mb-4">
+            <label for="sourceFolder" class="block text-sm font-medium text-gray-700">源文件夹路径</label>
+            <div class="flex items-center">
+              <input type="text" name="sourceFolder" id="sourceFolder" placeholder="请输入或选择文件夹路径" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+              <input type="file" id="folderSelect" webkitdirectory directory style="display: none;">
+              <button type="button" onclick="document.getElementById('folderSelect').click()" class="ml-2 bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">选择</button>
+            </div>
+          </div>
+          <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">创建文件夹和复制文件</button>
+        </form>
+      {% endif %}
+      {% if error and not names %}
         <p class="mt-4 text-sm text-red-600 text-center">{{ error }}</p>
       {% endif %}
-    </form>
-    <p class="mt-4 text-sm text-gray-600 text-center"><a href="{{ url_for('batch') }}" class="text-blue-600 hover:underline">去批量处理</a></p>
+    </section>
+
+    <!-- 单文件转换块 -->
+    <section class="bg-white p-8 rounded-lg shadow-lg">
+      <h1 class="text-2xl font-bold text-center mb-6">单文件JPG到PDF转换</h1>
+      <form method="POST" enctype="multipart/form-data" id="uploadForm">
+        <input type="hidden" name="action" value="single">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">选择JPG文件</label>
+          <input type="file" name="jpgFiles" id="jpgFiles" accept="image/jpeg" multiple
+                 class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">文件顺序</label>
+          <ul id="fileList" class="list-disc pl-5"></ul>
+          <input type="hidden" name="fileOrder" id="fileOrder">
+        </div>
+        <div class="mb-4">
+          <label for="saveName" class="block text-sm font-medium text-gray-700">保存文件名</label>
+          <input type="text" name="saveName" placeholder="请输入文件夹和PDF文件名" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+        </div>
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">合并并保存PDF</button>
+        {% if error and names %}
+          <p class="mt-4 text-sm text-red-600 text-center">{{ error }}</p>
+        {% endif %}
+      </form>
+    </section>
   </div>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <script src="{{ url_for('static', filename='batch.js') }}"></script>
 </body>
 </html>
